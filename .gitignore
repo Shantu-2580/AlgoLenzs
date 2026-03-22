@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+build/
+dist/
+**/build/
+**/dist/
+**/dist-ssr/
+coverage/
+**/coverage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+frontend/.env.*
+backend/.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Caches and temp
+.cache/
+.tmp/
+tmp/
+**/.cache/
+**/.tmp/
+**/tmp/
+.eslintcache
+.vite/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Editor and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Optional deployment / local tooling
+.vercel/
+.netlify/

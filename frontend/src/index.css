@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  color: #e8e8f0;
+  background-color: #0a0a0f;
+  background-image: radial-gradient(circle at 15% 15%, rgba(124, 106, 247, 0.18), transparent 36%),
+    radial-gradient(circle at 85% 3%, rgba(0, 245, 196, 0.14), transparent 25%);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.hero-grid {
+  position: relative;
+}
+
+.hero-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 30, 46, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 30, 46, 0.35) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.hero-grid > * {
+  position: relative;
+  z-index: 1;
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-xl border border-neon-border bg-surface/70 backdrop-blur-md;
+  }
+
+  .control-btn {
+    @apply rounded-md border border-neon-border bg-panel px-3 py-1.5 text-xs text-text-main transition hover:border-neon-mint disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .wave-grid {
+    width: 220px;
+    height: 76px;
+    border-radius: 12px;
+    background:
+      linear-gradient(90deg, rgba(124, 106, 247, 0.18), rgba(0, 245, 196, 0.18)),
+      repeating-linear-gradient(
+        90deg,
+        rgba(0, 245, 196, 0.35),
+        rgba(0, 245, 196, 0.35) 2px,
+        transparent 2px,
+        transparent 14px
+      );
+    animation: wave-pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes logo-shift {
+  0% {
+    background-position: 0 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes wave-pulse {
+  0%,
+  100% {
+    transform: translateY(0px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
+}
