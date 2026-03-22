@@ -19,21 +19,65 @@ const DEFAULT_LINKS = [
   { source: '30', target: '36' },
 ]
 
+function treeToGraph(root, width, height) {
+  if (!root) {
+    return { nodes: [], links: [] }
+  }
+
+  const levels = []
+  const links = []
+
+  function walk(node, depth = 0, parent = null) {
+    if (!node) return
+    if (!levels[depth]) levels[depth] = []
+    levels[depth].push(node)
+    if (parent) {
+      links.push({ source: String(parent.id ?? parent.val), target: String(node.id ?? node.val) })
+    }
+    walk(node.left, depth + 1, node)
+    walk(node.right, depth + 1, node)
+  }
+
+  walk(root)
+
+  const nodes = []
+  const maxDepth = Math.max(levels.length - 1, 0)
+  levels.forEach((levelNodes, depth) => {
+    const y = 50 + (depth * (height - 100)) / Math.max(maxDepth || 1, 1)
+    const gap = width / (levelNodes.length + 1)
+    levelNodes.forEach((node, index) => {
+      nodes.push({
+        id: String(node.id ?? node.val),
+        x: gap * (index + 1),
+        y,
+      })
+    })
+  })
+
+  return { nodes, links }
+}
+
 export default function renderTree(svgEl, step) {
   if (!svgEl) return
 
-  const nodes = step?.nodes ?? step?.state?.nodes ?? DEFAULT_NODES
-  const links = step?.links ?? step?.state?.links ?? DEFAULT_LINKS
-  const active = new Set(step?.path ?? step?.visited ?? step?.state?.path ?? [])
-
   const width = svgEl.clientWidth || 700
   const height = svgEl.clientHeight || 340
+
+  const derived = treeToGraph(step?.state?.tree, width, height)
+
+  const nodes = step?.nodes ?? step?.state?.nodes ?? DEFAULT_NODES
+  const links = step?.links ?? step?.state?.links ?? (derived.links.length ? derived.links : DEFAULT_LINKS)
+  const resolvedNodes = derived.nodes.length ? derived.nodes : nodes
+  const path = step?.path ?? step?.visited ?? step?.state?.path ?? step?.state?.visited ?? []
+  const active = new Set(
+    path.map((item) => (item && typeof item === 'object' ? String(item.node) : String(item)))
+  )
 
   const svg = d3.select(svgEl)
   svg.selectAll('*').remove()
   svg.attr('viewBox', `0 0 ${width} ${height}`)
 
-  const idToNode = new Map(nodes.map((node) => [node.id, node]))
+  const idToNode = new Map(resolvedNodes.map((node) => [String(node.id), node]))
 
   svg
     .selectAll('line')
@@ -48,7 +92,7 @@ export default function renderTree(svgEl, step) {
 
   const groups = svg
     .selectAll('g.node')
-    .data(nodes)
+    .data(resolvedNodes)
     .join('g')
     .attr('transform', (d) => `translate(${d.x},${d.y})`)
 

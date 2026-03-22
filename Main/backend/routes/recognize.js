@@ -31,6 +31,20 @@ const TRACE_GENERATORS = {
   queue_ops:      queueOpsTrace,
 };
 
+// Detect common language built-in sort calls when manual algorithm patterns are absent.
+function detectBuiltinSort(code = '') {
+  const patterns = [
+    /\bArrays\.sort\s*\(/,          // Java
+    /\bCollections\.sort\s*\(/,     // Java
+    /\bsorted\s*\(/,                // Python
+    /\.sort\s*\(/,                  // JS/Python list
+    /\bstable_sort\s*\(/,           // C++
+    /\bsort\s*\(.*\)/,             // Generic C++/other
+  ];
+
+  return patterns.some((re) => re.test(code));
+}
+
 // ── Fire-and-forget logging ───────────────────────────────────────────────────
 function logToSupabase(data) {
   if (!supabase) return;
@@ -100,6 +114,19 @@ router.post(
           description: match.description,
         };
       } else {
+        if (detectBuiltinSort(code)) {
+          result = {
+            algorithm: 'quick_sort',
+            displayName: 'Built-in Sort',
+            category: 'Sorting',
+            confidence: 0.65,
+            source: 'heuristic',
+            language,
+            trace: quickSortTrace(),
+            complexity: { time: 'O(n log n)', space: 'O(log n)' },
+            description: 'Detected a built-in sorting call. Visualization uses a representative quick sort trace.',
+          };
+        } else {
         // 3b. Low confidence — call Gemini
         try {
           const geminiResult = await analyzeWithGemini(code);
@@ -118,6 +145,7 @@ router.post(
             error: 'Algorithm not recognized',
             suggestion: 'Could not identify this algorithm. Supported: Bubble/Selection/Insertion/Merge/Quick Sort, BST, BFS, DFS, Linked List, Stack, Queue.',
           });
+        }
         }
       }
 

@@ -50,8 +50,6 @@ export default function UserPage() {
     togglePlay,
   } = useVisualizer(result?.trace ?? [])
 
-  const activeLine = stepData?.line ?? stepData?.lineNumber ?? null
-
   const resolvedInfo = useMemo(() => {
     if (!result?.algorithm) return null
     const fallback = algorithmFallback[result.algorithm] ?? {
@@ -107,21 +105,20 @@ export default function UserPage() {
       <Navbar onToggleEditor={() => setEditorVisible((prev) => !prev)} editorVisible={editorVisible} />
 
       <section className="hero-grid mx-auto max-w-7xl px-4 pb-6 pt-4 md:px-6 md:pt-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[45%_55%]">
-          <div className={`${editorVisible ? 'block' : 'hidden sm:block'} min-h-[560px]`}>
+        <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-[45%_55%]">
+          <div className={`${editorVisible ? 'block' : 'hidden sm:block'} min-h-0`}>
             <CodeEditor
               code={code}
               onChange={setCode}
               language={language}
               onLanguageChange={setLanguage}
-              activeLine={activeLine}
               onVisualize={onVisualize}
               isLoading={isLoading}
               error={error}
             />
           </div>
 
-          <div className="min-h-[560px]">
+          <div className="min-h-0">
             <VisualizerPanel result={result} stepData={stepData} hasTrace={Boolean(result?.trace?.length)} />
 
             <div className="md:static md:mt-0 fixed bottom-0 left-0 right-0 z-40 bg-bg-main/85 px-2 pb-2 pt-2 backdrop-blur sm:px-4 md:bg-transparent md:px-0 md:pb-0">

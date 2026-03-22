@@ -8,13 +8,28 @@ export default function renderSorting(svgEl, step) {
   const values =
     step?.array ??
     step?.values ??
+    step?.state?.arr ??
     step?.state?.array ??
     step?.state?.values ??
     DEFAULT_VALUES
 
-  const compare = step?.compare ?? step?.indices?.compare ?? []
-  const swap = step?.swap ?? step?.indices?.swap ?? []
-  const sortedUntil = step?.sortedUntil ?? step?.state?.sortedUntil
+  const compare =
+    step?.compare ??
+    step?.indices?.compare ??
+    step?.state?.comparing ??
+    []
+
+  const swap =
+    step?.swap ??
+    step?.indices?.swap ??
+    step?.state?.swapped ??
+    []
+
+  const sortedIndices = step?.state?.sorted ?? []
+  const sortedUntil =
+    step?.sortedUntil ??
+    step?.state?.sortedUntil ??
+    (Array.isArray(sortedIndices) && sortedIndices.length ? Math.max(...sortedIndices) : undefined)
 
   const width = svgEl.clientWidth || 700
   const height = svgEl.clientHeight || 340

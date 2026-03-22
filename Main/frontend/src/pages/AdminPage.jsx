@@ -76,9 +76,9 @@ export default function AdminPage() {
     fetchStats()
   }, [authenticated, fetchStats])
 
-  const submitPassword = (event) => {
+  const submitPassword = async (event) => {
     event.preventDefault()
-    const ok = login(password)
+    const ok = await login(password)
     if (!ok) {
       setShake(true)
       window.setTimeout(() => setShake(false), 350)

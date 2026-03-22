@@ -17,21 +17,74 @@ const DEFAULT_LINKS = [
   { source: 'A', target: 'D' },
 ]
 
+function graphStateToNodesLinks(graph, width, height) {
+  if (!graph || typeof graph !== 'object') {
+    return { nodes: [], links: [] }
+  }
+
+  const nodeIds = Object.keys(graph)
+  if (!nodeIds.length) {
+    return { nodes: [], links: [] }
+  }
+
+  const radius = Math.min(width, height) * 0.34
+  const cx = width / 2
+  const cy = height / 2
+
+  const nodes = nodeIds.map((id, idx) => {
+    const angle = (2 * Math.PI * idx) / nodeIds.length
+    return {
+      id: String(id),
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    }
+  })
+
+  const seen = new Set()
+  const links = []
+  for (const [source, neighbors] of Object.entries(graph)) {
+    const values = Array.isArray(neighbors)
+      ? neighbors
+      : String(neighbors || '')
+          .split(/\s+/)
+          .filter(Boolean)
+
+    values.forEach((targetRaw) => {
+      const target = String(targetRaw)
+      const key = [String(source), target].sort().join('::')
+      if (!seen.has(key)) {
+        seen.add(key)
+        links.push({ source: String(source), target })
+      }
+    })
+  }
+
+  return { nodes, links }
+}
+
 export default function renderGraph(svgEl, step) {
   if (!svgEl) return
 
-  const nodes = step?.nodes ?? step?.state?.nodes ?? DEFAULT_NODES
-  const links = step?.links ?? step?.state?.links ?? DEFAULT_LINKS
-  const active = new Set(step?.visited ?? step?.path ?? step?.state?.visited ?? [])
-
   const width = svgEl.clientWidth || 700
   const height = svgEl.clientHeight || 340
+  const derived = graphStateToNodesLinks(step?.state?.graph, width, height)
+
+  const nodes = step?.nodes ?? step?.state?.nodes ?? (derived.nodes.length ? derived.nodes : DEFAULT_NODES)
+  const links = step?.links ?? step?.state?.links ?? (derived.links.length ? derived.links : DEFAULT_LINKS)
+  const activeSet = new Set(step?.visited ?? step?.path ?? step?.state?.visited ?? [])
+  if (step?.state?.currentNode !== null && step?.state?.currentNode !== undefined) {
+    activeSet.add(step.state.currentNode)
+  }
+  if (step?.state?.checkingNeighbor !== null && step?.state?.checkingNeighbor !== undefined) {
+    activeSet.add(step.state.checkingNeighbor)
+  }
+  const active = new Set(Array.from(activeSet).map((v) => String(v)))
 
   const svg = d3.select(svgEl)
   svg.selectAll('*').remove()
   svg.attr('viewBox', `0 0 ${width} ${height}`)
 
-  const idToNode = new Map(nodes.map((node) => [node.id, node]))
+  const idToNode = new Map(nodes.map((node) => [String(node.id), node]))
 
   svg
     .selectAll('line')

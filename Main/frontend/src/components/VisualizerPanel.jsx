@@ -6,18 +6,32 @@ import renderGraph from '../visualizers/GraphVisualizer'
 import renderList from '../visualizers/ListVisualizer'
 
 function renderByCategory(svgEl, category, step) {
-  switch (category) {
+  const normalized = String(category || '').toLowerCase().replace(/\s+/g, '')
+
+  switch (normalized) {
     case 'Sorting':
+    case 'sorting':
       renderSorting(svgEl, step)
       break
     case 'Trees':
+    case 'tree':
+    case 'trees':
       renderTree(svgEl, step)
       break
     case 'Graphs':
+    case 'graph':
+    case 'graphs':
       renderGraph(svgEl, step)
       break
-    case 'Linked List':
-    case 'Stack / Queue':
+    case 'linkedlist':
+    case 'linked-list':
+    case 'linked list':
+    case 'stack':
+    case 'queue':
+    case 'stack/queue':
+    case 'stack/ queue':
+    case 'stack /queue':
+    case 'stack / queue':
       renderList(svgEl, step, category)
       break
     default:
@@ -34,7 +48,7 @@ export default function VisualizerPanel({ result, stepData, hasTrace }) {
   }, [hasTrace, result?.category, stepData])
 
   return (
-    <section className="glass-card flex h-full flex-col p-4 sm:p-5">
+    <section className="glass-card flex min-h-0 flex-col p-4 sm:p-5">
       <div className="mb-3 flex items-start justify-between gap-3">
         <AlgorithmBadge
           algorithm={result?.algorithm}
@@ -43,7 +57,7 @@ export default function VisualizerPanel({ result, stepData, hasTrace }) {
         />
       </div>
 
-      <div className="relative flex min-h-[320px] flex-1 items-center justify-center overflow-hidden rounded-lg border border-neon-border bg-editor">
+      <div className="relative flex h-[260px] sm:h-[320px] md:h-[380px] lg:h-[430px] items-center justify-center overflow-hidden rounded-lg border border-neon-border bg-editor">
         {hasTrace ? (
           <svg ref={svgRef} className="h-full w-full" />
         ) : (

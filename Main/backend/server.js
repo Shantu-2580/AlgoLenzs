@@ -1,12 +1,20 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 
 const recognizeRoute = require('./routes/recognize');
 const statsRoute = require('./routes/stats');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+function safeEqual(a, b) {
+  const aBuf = Buffer.from(String(a), 'utf8');
+  const bBuf = Buffer.from(String(b), 'utf8');
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
 
 // ── Middleware ─────────────────────────────────────────────
 app.use(cors({
@@ -16,6 +24,25 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '50kb' }));
+
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body || {};
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    return res.status(500).json({ error: 'Admin auth not configured' });
+  }
+
+  if (typeof password !== 'string' || !password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  if (!safeEqual(password, adminPassword)) {
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
+
+  return res.json({ ok: true });
+});
 
 // ── Routes ─────────────────────────────────────────────────
 app.use('/api', recognizeRoute);

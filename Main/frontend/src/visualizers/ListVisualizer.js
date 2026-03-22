@@ -5,14 +5,51 @@ const DEFAULT_VALUES = ['12', '7', '19', '31']
 export default function renderList(svgEl, step, category) {
   if (!svgEl) return
 
+  const state = step?.state ?? {}
+
+  let derivedValues = null
+  let derivedActiveIndex = 0
+
+  if (Array.isArray(state.nodes) && state.nodes.length) {
+    const byId = new Map(state.nodes.map((n) => [n.id, n]))
+    const ordered = []
+    const seen = new Set()
+    let currentId = state.head ?? state.nodes[0]?.id
+
+    while (currentId !== null && currentId !== undefined && byId.has(currentId) && !seen.has(currentId)) {
+      seen.add(currentId)
+      const node = byId.get(currentId)
+      ordered.push(node)
+      currentId = node.next
+    }
+
+    derivedValues = ordered.map((n) => n.val)
+
+    if (state.currentNode !== null && state.currentNode !== undefined) {
+      derivedActiveIndex = ordered.findIndex((n) => n.id === state.currentNode)
+      if (derivedActiveIndex < 0) derivedActiveIndex = 0
+    }
+  } else if (Array.isArray(state.stack)) {
+    derivedValues = state.stack
+    derivedActiveIndex = typeof state.top === 'number' ? state.top : Math.max(state.stack.length - 1, 0)
+  } else if (Array.isArray(state.queue)) {
+    derivedValues = state.queue
+    derivedActiveIndex = 0
+  }
+
   const values =
+    derivedValues ??
     step?.values ??
     step?.array ??
     step?.state?.values ??
     step?.state?.array ??
     DEFAULT_VALUES
 
-  const activeIndex = step?.index ?? step?.pointer ?? step?.state?.index ?? 0
+  const activeIndex =
+    step?.index ??
+    step?.pointer ??
+    step?.state?.index ??
+    derivedActiveIndex
 
   const width = svgEl.clientWidth || 700
   const height = svgEl.clientHeight || 340
@@ -60,7 +97,11 @@ export default function renderList(svgEl, step, category) {
     .attr('stroke', '#5b5f92')
     .attr('stroke-width', 2)
 
-  const pointerLabel = category === 'Stack / Queue' ? 'TOP/FRONT' : 'PTR'
+  const normalizedCategory = String(category || '').toLowerCase()
+  const pointerLabel =
+    normalizedCategory.includes('stack') || normalizedCategory.includes('queue')
+      ? 'TOP/FRONT'
+      : 'PTR'
 
   svg
     .append('text')
